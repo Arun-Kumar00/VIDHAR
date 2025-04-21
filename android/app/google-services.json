@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "555508471293",
+    "firebase_url": "https://idky-caf23-default-rtdb.firebaseio.com",
+    "project_id": "idky-caf23",
+    "storage_bucket": "idky-caf23.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:555508471293:android:3c4fbc8b9b388367cd3594",
+        "android_client_info": {
+          "package_name": "com.example.vidhar_final"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_jgaIhFOhw1k3ZnPry-HDJklIjZ3EBRU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
