@@ -43,3 +43,25 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.pub/
+build/
+flutter_*.png
+generated_plugin_registrant.dart
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Misc
+*.log
+*.tmp
+*.swp
+
+# Firebase secrets (you can exclude them if needed)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+

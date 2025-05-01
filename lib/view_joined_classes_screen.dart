@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'attendance_screen.dart';
 
 class ViewJoinedClassesScreen extends StatefulWidget {
@@ -39,14 +40,12 @@ class _ViewJoinedClassesScreenState extends State<ViewJoinedClassesScreen> {
 
         for (var classEntry in joinedClassesSnapshot.children) {
           final combinedKey = classEntry.key;
-
           if (combinedKey == null || !combinedKey.contains(' ')) continue;
 
           final parts = combinedKey.split(' ');
           final teacherUid = parts[0];
           final classId = parts[1];
 
-          // Fetch class details
           final classRef = FirebaseDatabase.instance
               .ref()
               .child('classes')
@@ -54,7 +53,6 @@ class _ViewJoinedClassesScreenState extends State<ViewJoinedClassesScreen> {
               .child(classId);
 
           final classSnapshot = await classRef.get();
-
           if (classSnapshot.exists) {
             final classData = classSnapshot.value as Map<dynamic, dynamic>;
 
@@ -115,10 +113,7 @@ class _ViewJoinedClassesScreenState extends State<ViewJoinedClassesScreen> {
           title: Text("Error"),
           content: Text("Failed to leave the class. Please try again."),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("OK"),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text("OK")),
           ],
         ),
       );
@@ -132,10 +127,7 @@ class _ViewJoinedClassesScreenState extends State<ViewJoinedClassesScreen> {
         title: Text("Confirm Leave"),
         content: Text("Are you sure you want to leave the class $classId?"),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancel")),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
@@ -150,25 +142,66 @@ class _ViewJoinedClassesScreenState extends State<ViewJoinedClassesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = Color(0xFFD4EDF4);
+    final cardColor = Colors.white.withOpacity(0.9);
+    final titleColor = Color(0xFF2A2E30);
+    final accentColor = Color(0xFFFF9E7A);
+
     return Scaffold(
-      appBar: AppBar(title: Text("Joined Classes")),
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        backgroundColor: titleColor,
+        title: Text("Joined Classes", style: GoogleFonts.poppins(color: Colors.white)),
+      ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _joinedClasses.isEmpty
-          ? Center(child: Text("You have not joined any classes."))
+          ? Center(
+        child: Text(
+          "You have not joined any classes.",
+          style: GoogleFonts.poppins(fontSize: 16),
+        ),
+      )
           : ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         itemCount: _joinedClasses.length,
         itemBuilder: (context, index) {
           final classData = _joinedClasses[index];
-          return Card(
-            margin: EdgeInsets.all(10),
+          return Container(
+            margin: EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
             child: ListTile(
-              title: Text("Class ID: ${classData['classId']}"),
+              contentPadding: EdgeInsets.all(16),
+              title: Text(
+                "Class ID: ${classData['classId']}",
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: titleColor,
+                ),
+              ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Teacher: ${classData['teacherName']}"),
-                  Text("Subject: ${classData['subjectName']}"),
+                  SizedBox(height: 6),
+                  Text(
+                    "Teacher: ${classData['teacherName']}",
+                    style: GoogleFonts.poppins(color: Colors.black87),
+                  ),
+                  Text(
+                    "Subject: ${classData['subjectName']}",
+                    style: GoogleFonts.poppins(color: Colors.black54),
+                  ),
                 ],
               ),
               trailing: Row(

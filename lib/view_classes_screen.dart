@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'more_info_page.dart';
 
 class ViewClassesScreen extends StatefulWidget {
@@ -11,7 +12,7 @@ class ViewClassesScreen extends StatefulWidget {
 class _ViewClassesScreenState extends State<ViewClassesScreen> {
   List<Map<String, String>> _classes = [];
   bool _isLoading = true;
-  String? _teacherUid; // ✅ Add this variable to store teacher UID
+  String? _teacherUid;
 
   @override
   void initState() {
@@ -26,7 +27,7 @@ class _ViewClassesScreenState extends State<ViewClassesScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception("User not logged in.");
 
-      _teacherUid = user.uid; // ✅ Store teacher UID
+      _teacherUid = user.uid;
 
       final DatabaseReference userClassesRef = FirebaseDatabase.instance.ref('classes/${user.uid}');
       final snapshot = await userClassesRef.once();
@@ -93,28 +94,50 @@ class _ViewClassesScreenState extends State<ViewClassesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('View Classes')),
+      backgroundColor: Color(0xFFD4EDF4),
+      appBar: AppBar(
+        title: Text('Your Classes', style: GoogleFonts.poppins()),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black,
+      ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _classes.isEmpty
-          ? Center(child: Text("No classes found."))
+          ? Center(
+        child: Text("No classes found.",
+            style: GoogleFonts.poppins(fontSize: 16)),
+      )
           : ListView.builder(
         itemCount: _classes.length,
+        padding: const EdgeInsets.all(16),
         itemBuilder: (context, index) {
           final classData = _classes[index];
           return Card(
-            margin: EdgeInsets.all(10),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            elevation: 4,
+            color: Colors.white,
+            margin: EdgeInsets.only(bottom: 16),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Department: ${classData['department']}", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text("Class ID: ${classData['classId']}"),
-                  Text("Password: ${classData['password']}"),
-                  Text("Subject: ${classData['subjectName']}"),
-                  Text("Teacher: ${classData['teacherName']}"),
-                  SizedBox(height: 10),
+                  Text("Department: ${classData['department']}",
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16)),
+                  SizedBox(height: 4),
+                  Text("Class ID: ${classData['classId']}",
+                      style: GoogleFonts.poppins()),
+                  Text("Password: ${classData['password']}",
+                      style: GoogleFonts.poppins()),
+                  Text("Subject: ${classData['subjectName']}",
+                      style: GoogleFonts.poppins()),
+                  Text("Teacher: ${classData['teacherName']}",
+                      style: GoogleFonts.poppins()),
+                  SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -125,17 +148,33 @@ class _ViewClassesScreenState extends State<ViewClassesScreen> {
                             MaterialPageRoute(
                               builder: (context) => MoreInfoPage(
                                 classId: classData['classId']!,
-                                teacherUid: _teacherUid!, // ✅ Pass teacher UID
+                                teacherUid: _teacherUid!,
                               ),
                             ),
                           );
                         },
-                        child: Text("More Info"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF77C1E2),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text("More Info",
+                            style: GoogleFonts.poppins()),
                       ),
                       ElevatedButton(
-                        onPressed: () => _deleteClass(classData['classId']!),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                        child: Text("Delete"),
+                        onPressed: () =>
+                            _deleteClass(classData['classId']!),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text("Delete",
+                            style: GoogleFonts.poppins()),
                       ),
                     ],
                   ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:vidhar_final/wifi_service.dart';  // Assuming this is where your WifiService is defined
+import 'package:google_fonts/google_fonts.dart';
+import 'package:vidhar_final/wifi_service.dart';
 
 class TeacherPortalScreen extends StatefulWidget {
   final String teacherUid;
@@ -17,6 +18,11 @@ class _TeacherPortalScreenState extends State<TeacherPortalScreen> {
   String _wifiName = "Fetching...";
   String? _currentSessionId;
 
+  final backgroundColor = const Color(0xFFD4EDF4);
+  final cardColor = const Color(0xFF2A2E30);
+  final accentColor = const Color(0xFFFF9E7A);
+  final textColor = Colors.white;
+
   @override
   void initState() {
     super.initState();
@@ -30,32 +36,26 @@ class _TeacherPortalScreenState extends State<TeacherPortalScreen> {
     });
   }
 
-  // Open a new attendance session
   Future<void> openSession() async {
     try {
       final currentDate = DateTime.now().toIso8601String().split('T').first;
-      final sessionId = DateTime.now().millisecondsSinceEpoch.toString(); // Unique per session
+      final sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+
       final ref = FirebaseDatabase.instance.ref('classes/${widget.teacherUid}/${widget.classId}');
-
       await ref.child('attendance/$currentDate/$sessionId/initialized').set(true);
-
       await ref.update({
         'portalOpen': true,
         'teacherWifi': _wifiName,
-        'currentSessionId': sessionId, // Store ongoing session
+        'currentSessionId': sessionId,
       });
 
-      setState(() {
-        _currentSessionId = sessionId;
-      });
-
+      setState(() => _currentSessionId = sessionId);
       Fluttertoast.showToast(msg: 'Session $sessionId opened for $currentDate');
     } catch (e) {
       Fluttertoast.showToast(msg: 'Error: $e');
     }
   }
 
-  // Close the current session & mark absentees
   Future<void> closeSession() async {
     try {
       if (_currentSessionId == null) {
@@ -73,10 +73,8 @@ class _TeacherPortalScreenState extends State<TeacherPortalScreen> {
         return;
       }
 
-      final attendanceData = Map<String, dynamic>.from(attendanceSnap.value as Map);
+      final recorded = Map<String, dynamic>.from(attendanceSnap.value as Map).keys.toSet();
       final studentData = Map<String, dynamic>.from(studentSnap.value as Map);
-
-      final recorded = attendanceData.keys.toSet();
 
       for (final uid in studentData.keys) {
         if (!recorded.contains(uid)) {
@@ -85,12 +83,8 @@ class _TeacherPortalScreenState extends State<TeacherPortalScreen> {
       }
 
       await ref.update({'portalOpen': false});
-
       Fluttertoast.showToast(msg: 'Session $_currentSessionId closed. Absentees marked.');
-
-      setState(() {
-        _currentSessionId = null; // Reset session ID after closing
-      });
+      setState(() => _currentSessionId = null);
     } catch (e) {
       Fluttertoast.showToast(msg: 'Error: $e');
     }
@@ -99,35 +93,55 @@ class _TeacherPortalScreenState extends State<TeacherPortalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Teacher Portal")),
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        backgroundColor: cardColor,
+        title: Text("Teacher Portal", style: GoogleFonts.poppins(color: textColor)),
+        iconTheme: IconThemeData(color: accentColor),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Card(
-              elevation: 3,
-              child: ListTile(
-                title: Text("Class ID: ${widget.classId}"),
-                subtitle: Column(
+              color: cardColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 8,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Teacher ID: ${widget.teacherUid}"),
-                    Text("Wi-Fi SSID: $_wifiName"),
-                    Text("Current Session ID: ${_currentSessionId ?? 'None'}"),
+                    Text("Class ID: ${widget.classId}", style: GoogleFonts.poppins(color: textColor, fontSize: 16)),
+                    Text("Teacher ID: ${widget.teacherUid}", style: GoogleFonts.poppins(color: textColor, fontSize: 16)),
+                    Text("Wi-Fi SSID: $_wifiName", style: GoogleFonts.poppins(color: textColor, fontSize: 16)),
+                    Text("Session ID: ${_currentSessionId ?? 'None'}", style: GoogleFonts.poppins(color: textColor, fontSize: 16)),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             ElevatedButton.icon(
-              icon: const Icon(Icons.wifi),
-              label: const Text('Start New Session'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              ),
+              icon: const Icon(Icons.play_arrow),
+              label: Text("Start New Session", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
               onPressed: openSession,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
-              icon: const Icon(Icons.lock),
-              label: const Text('End Current Session'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              ),
+              icon: const Icon(Icons.stop),
+              label: Text("End Current Session", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
               onPressed: closeSession,
             ),
           ],

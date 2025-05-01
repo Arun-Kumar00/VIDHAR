@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:excel/excel.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_filex/open_filex.dart';
@@ -21,6 +22,11 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
   List<Map<String, dynamic>> _students = [];
   List<String> _attendanceDates = [];
   bool _isLoading = true;
+
+  final backgroundColor = const Color(0xFFD4EDF4);
+  final cardColor = const Color(0xFF2A2E30);
+  final accentColor = const Color(0xFFFF9E7A);
+  final textColor = Colors.white;
 
   @override
   void initState() {
@@ -44,14 +50,12 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
     List<Map<String, dynamic>> students = [];
     Set<String> attendanceDates = {};
 
-    // Extract attendance dates
     if (attendanceSnapshot.exists) {
       for (var dateSnap in attendanceSnapshot.children) {
         attendanceDates.add(dateSnap.key!);
       }
     }
 
-    // Process each student
     for (var studentSnap in joinedStudentsSnapshot.children) {
       final userId = studentSnap.key!;
       final userSnap = await usersRef.child(userId).get();
@@ -87,7 +91,6 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
 
         totalSessions += dailyTotal;
         present += dailyPresent;
-
         dailyAttendance[date] = statusString.trim().isEmpty ? "-" : statusString.trim();
       }
 
@@ -109,8 +112,6 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
     });
   }
 
-
-
   Future<void> _exportToExcel() async {
     if (Platform.isAndroid) {
       var permission = await Permission.manageExternalStorage.request();
@@ -124,7 +125,6 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
 
     final excel = Excel.createExcel();
     final Sheet sheet = excel['Attendance Register'];
-
     sheet.appendRow(["Roll No", "Name", ..._attendanceDates, "Total Classes", "Classes Attended"]);
 
     for (var student in _students) {
@@ -145,7 +145,7 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("Excel file saved to Downloads: Attendance_${widget.classId}.xlsx"),
+        content: Text("Excel file saved: Attendance_${widget.classId}.xlsx"),
         action: SnackBarAction(
           label: "Open",
           onPressed: () => OpenFilex.open(path),
@@ -153,7 +153,6 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
       ),
     );
 
-    // Optional: Show a dialog to share
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -161,9 +160,7 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
         content: const Text("Do you want to share the Excel file?"),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             child: const Text("No"),
           ),
           TextButton(
@@ -178,15 +175,16 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text("Attendance Register"),
+        backgroundColor: cardColor,
+        title: Text("Attendance Register", style: GoogleFonts.poppins(color: textColor)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.download),
+            icon: Icon(Icons.download, color: accentColor),
             tooltip: "Export to Excel",
             onPressed: _exportToExcel,
           ),
@@ -196,24 +194,38 @@ class _ExtraInfoPageState extends State<ExtraInfoPage> {
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: [
-            const DataColumn(label: Text("Roll No")),
-            const DataColumn(label: Text("Name")),
-            ..._attendanceDates.map((date) => DataColumn(label: Text(date))),
-            const DataColumn(label: Text("Total Classes")),
-            const DataColumn(label: Text("Attended")),
-          ],
-          rows: _students.map((student) {
-            return DataRow(cells: [
-              DataCell(Text(student["roll"])),
-              DataCell(Text(student["name"])),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: DataTable(
+            headingRowColor: MaterialStateProperty.all(cardColor),
+            headingTextStyle: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold, color: accentColor),
+            dataTextStyle: GoogleFonts.poppins(color: Colors.black87),
+            columns: [
+              const DataColumn(label: Text("Roll No")),
+              const DataColumn(label: Text("Name")),
               ..._attendanceDates.map((date) =>
-                  DataCell(Text(student["dailyAttendance"][date] ?? "-"))),
-              DataCell(Text(student["totalClasses"].toString())),
-              DataCell(Text(student["classesAttended"].toString())),
-            ]);
-          }).toList(),
+                  DataColumn(label: Text(date))),
+              const DataColumn(label: Text("Total Classes")),
+              const DataColumn(label: Text("Attended")),
+            ],
+            rows: _students.map((student) {
+              return DataRow(
+                color: MaterialStateProperty.resolveWith<Color?>(
+                        (Set<MaterialState> states) {
+                      return Colors.grey.shade200;
+                    }),
+                cells: [
+                  DataCell(Text(student["roll"])),
+                  DataCell(Text(student["name"])),
+                  ..._attendanceDates.map((date) => DataCell(
+                      Text(student["dailyAttendance"][date] ?? "-"))),
+                  DataCell(Text(student["totalClasses"].toString())),
+                  DataCell(Text(student["classesAttended"].toString())),
+                ],
+              );
+            }).toList(),
+          ),
         ),
       ),
     );

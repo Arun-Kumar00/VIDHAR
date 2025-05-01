@@ -22,6 +22,7 @@
         android:label="VIDHAR"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:theme="@style/NormalTheme"
         android:requestLegacyExternalStorage="true">
 
         <activity
@@ -29,10 +30,10 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
-            android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/NormalTheme">
 
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
